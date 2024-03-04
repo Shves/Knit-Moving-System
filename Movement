@@ -1,0 +1,58 @@
+-- Constants
+local NEEDLE_COUNT = 5
+local NEEDLE_DISTANCE = 2
+local KNITTING_PATTERN = {1, 2, 3, 4, 5, 4, 3, 2}
+
+-- Create needles
+local needles = {}
+for i = 1, NEEDLE_COUNT do
+    local needle = Instance.new("Part")
+    needle.Size = Vector3.new(0.1, 10, 0.1)
+    needle.Anchored = true
+    needle.Position = Vector3.new(NEEDLE_DISTANCE * (i - 1), 0, 0)
+    needle.Parent = workspace
+    table.insert(needles, needle)
+end
+
+-- Yarn
+local yarn = Instance.new("Part")
+yarn.Size = Vector3.new(0.1, 0.1, 0.1)
+yarn.Anchored = true
+yarn.Position = Vector3.new(0, 0, 0)
+yarn.Parent = workspace
+
+-- Function to animate the knitting
+local function knit()
+    for i = 1, #needles do
+        local needle = needles[i]
+        local targetPosition = Vector3.new(needle.Position.X, 10, needle.Position.Z)
+        local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+        local tween = game:GetService("TweenService"):Create(needle, tweenInfo, {Position = targetPosition})
+        tween:Play()
+    end
+    wait(1)
+
+    for i = 1, #needles do
+        local needle = needles[i]
+        local targetPosition = Vector3.new(needle.Position.X, 0, needle.Position.Z)
+        local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+        local tween = game:GetService("TweenService"):Create(needle, tweenInfo, {Position = targetPosition})
+        tween:Play()
+    end
+    wait(1)
+
+    -- Move yarn to next needle
+    local nextNeedleIndex = KNITTING_PATTERN[1]
+    table.remove(KNITTING_PATTERN, 1)
+    table.insert(KNITTING_PATTERN, nextNeedleIndex)
+    local nextNeedle = needles[nextNeedleIndex]
+    local yarnTargetPosition = Vector3.new(nextNeedle.Position.X, 0, nextNeedle.Position.Z)
+    local yarnTweenInfo = TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+    local yarnTween = game:GetService("TweenService"):Create(yarn, yarnTweenInfo, {Position = yarnTargetPosition})
+    yarnTween:Play()
+    yarnTween.Completed:Wait()
+    knit()  -- Loop the knitting animation
+end
+
+-- Start the knitting animation
+knit()
